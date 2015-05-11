@@ -50,25 +50,25 @@ certificate_alias:
 
 ```
 
-- ```name```
+* ``` name ```
 
 	The alias for the certificate
 	
 	
-- ```certificate```
+* ``` certificate ```
 	
 	The certificate file to load into the java keystore. Specify a full path, like ```C:\path\to\my\java\cert.crt```
 	
 	
-- ```java_home```
+* ``` java_home ```
 
 	The java installation base directory. should contain a bin and a libs directory. If this is not specified, this defaults to the JAVA_HOME environment variable.
 
-- ```keystore```
+* ``` keystore ```
 
 	The java keystore where you wish to place the certificate. Specify a full path, like ```c:\path\to\keystore```. If this is not specified, it will default to ``` java_home + 'libs\security\cacerts'``` where the java_home above is the base path and libs\security\cacerts is the relative path from that point.
 
-- ```storepass```
+* ``` storepass ```
 	
 	The java keystore password to install a new certificate. The default is 'changeit', so if you do not specify a password, it will default to this.
 
