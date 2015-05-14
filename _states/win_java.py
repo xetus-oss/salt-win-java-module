@@ -48,12 +48,12 @@ def java_home(name, set_to_current_version=False):
 
   old = __salt__['cmd.run'](
     '[Environment]::GetEnvironmentVariable("JAVA_HOME","Machine")', 
-    shell="powershell")
+    shell="powershell", python_shell=True)
 
   if java_home != old:
     cmdResult = __salt__['cmd.script'](
       'salt://win-java-home/powershell/set_java_home.ps1', 
-      args=(' "' + java_home + '"'), shell='powershell')
+      args=(' "' + java_home + '"'), shell='powershell', python_shell=True)
 
     if cmdResult:
       return {'name': name, 
@@ -123,7 +123,7 @@ def ca_install(name,
   if java_home is None:
     java_home = __salt__['cmd.run'](
       '[Environment]::GetEnvironmentVariable("JAVA_HOME","Machine")',
-      shell='powershell')
+      shell='powershell', python_shell=True)
 
   if keystore is None:
     keystore = java_home + '\\lib\\security\\cacerts'
@@ -134,7 +134,7 @@ def ca_install(name,
     ' -keystore "' + keystore + '"' +
     ' -storepass ' + storepass + 
     ' -list' +
-    ' -noprompt', shell='powershell')
+    ' -noprompt', shell='powershell', python_shell=True)
 
   if verifyResult != 0:
     storeResult = __salt__['cmd.retcode'](
@@ -145,7 +145,7 @@ def ca_install(name,
       ' -storepass ' + storepass +
       ' -import' +
       ' -trustcacerts' +
-      ' -noprompt', shell="powershell")
+      ' -noprompt', shell="powershell", python_shell=True)
 
     if storeResult == 0:
       return {'name': name, 
