@@ -76,7 +76,7 @@ def ca_install(name,
                java_home=None, 
                keystore=None, 
                storepass="changeit",
-               data_dir="C:\\salt-data\\java_certificates\\"):
+               certificate=None):
   '''
   Installs a certificate into a java keystore using java's keytool.
 
@@ -97,11 +97,8 @@ def ca_install(name,
     The keystore password for listing or installing a certificate. Defaults to
     'changeit', which is the default java keystore password
 
-  data_dir
-    Where the certificates are located on the minion. The certificates files
-    need to reside in that directory first before attempting to install them,
-    and they must be named the same as the alias for the certificate. Defaults
-    to C:\\salt-data\\java_certificates
+  certificate
+    The certificate to install into the java keystore
 
   This will verify that a certificate with the alias supplied does not already
   exist. If a certificate with the same alias as the one trying to be installed
@@ -120,7 +117,7 @@ def ca_install(name,
         - java_home: C:\\path\\to\\java\\home
         - keystore: C:\\path\\to\\java\\home\\and\\to\\keystore
         - storepass: super_secret
-        - data_dir: C:\\path\\to\\my\\certificates
+        - certificate: C:\\path\\to\\my\\certificate.crt
 
   '''
   if java_home is None:
@@ -143,7 +140,7 @@ def ca_install(name,
     storeResult = __salt__['cmd.retcode'](
       '&"' + java_home + '\\bin\\keytool.exe"' +
       ' -alias ' + name +
-      ' -file "' + data_dir + '\\' + name + '.crt' + '"' +
+      ' -file "' + certificate + '"' +
       ' -keystore "' + keystore + '"' +
       ' -storepass ' + storepass +
       ' -import' +
