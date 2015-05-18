@@ -51,11 +51,11 @@ def java_home(name, set_to_current_version=False):
     shell="powershell", python_shell=True)
 
   if java_home != old:
-    cmdResult = __salt__['cmd.script'](
-      'salt://win-java-home/powershell/set_java_home.ps1', 
-      args=(' "' + java_home + '"'), shell='powershell', python_shell=True)
+    cmdResult = __salt__['cmd.run_all'](
+      '[Environment]::SetEnvironmentVariable("JAVA_HOME","' + java_home + 
+      '","Machine")', shell='powershell', python_shell=True)
 
-    if cmdResult:
+    if cmdResult.retcode == 0:
       return {'name': name, 
               'changes': {'old': old, 'new': java_home}, 
               'result': True, 
