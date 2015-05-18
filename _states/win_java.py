@@ -55,7 +55,7 @@ def java_home(name, set_to_current_version=False):
       '[Environment]::SetEnvironmentVariable("JAVA_HOME","' + java_home + 
       '","Machine")', shell='powershell', python_shell=True)
 
-    if cmdResult.retcode == 0:
+    if cmdResult['retcode'] == 0:
       return {'name': name, 
               'changes': {'old': old, 'new': java_home}, 
               'result': True, 
