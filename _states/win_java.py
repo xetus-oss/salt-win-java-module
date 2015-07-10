@@ -51,11 +51,24 @@ def java_home(name, set_to_current_version=False):
     shell="powershell", python_shell=True)
 
   if java_home != old:
-    cmdResult = __salt__['cmd.run_all'](
+    setJavaHomeResult = __salt__['cmd.run_all'](
       '[Environment]::SetEnvironmentVariable("JAVA_HOME","' + java_home + 
       '","Machine")', shell='powershell', python_shell=True)
 
-    if cmdResult['retcode'] == 0:
+    setFSLinkResult = __salt__['cmd.run_all']('IF (TEST-PATH (join-path ' +
+        '([environment]::GetEnvironmentVariable("SystemRoot")) "java.exe")) ' +
+        '{ REMOVE-ITEM (join-path ' +
+        '([environment]::GetEnvironmentVariable("SystemRoot")) "java.exe"); ' +
+        'write-host "removed java.exe in system root" } ELSE { ' + 
+        'write-host "did not remove java.exe in system root" };' +
+        'fsutil hardlink create ' + 
+        '(join-path ([environment]::GetEnvironmentVariable("SystemRoot")) ' +
+        '"java.exe") (join-path "' + java_home + '" "\\bin\java.exe"); ' + 
+        'IF (-not $?) { EXIT 1 }', 
+        shell='powershell', python_shell=True)
+
+    if setJavaHomeResult['retcode'] == 0 and setFSLinkResult['retcode'] == 0:
+
       return {'name': name, 
               'changes': {'old': old, 'new': java_home}, 
               'result': True, 
