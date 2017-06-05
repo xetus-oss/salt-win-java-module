@@ -85,11 +85,11 @@ def java_home(name, set_to_current_version=False):
             'comment': 'JAVA_HOME was already set to ' + java_home, 
             'changes':{}}
 
-def ca_install(name, 
-               java_home=None, 
-               keystore=None, 
-               storepass="changeit",
-               certificate=None):
+def cert_present(name, 
+                 java_home=None, 
+                 keystore=None, 
+                 storepass="changeit",
+                 certificate=None):
   '''
   Installs a certificate into a java keystore using java's keytool.
 
@@ -126,7 +126,7 @@ def ca_install(name,
   .. code-block:: yaml
 
     my_cert:
-      win_java.ca_install:
+      win_java.cert_present:
         - java_home: C:\\path\\to\\java\\home
         - keystore: C:\\path\\to\\java\\home\\and\\to\\keystore
         - storepass: super_secret
@@ -163,7 +163,7 @@ def ca_install(name,
     if storeResult == 0:
       return {'name': name, 
               'result': True, 
-              'changes': {'old':'', 'new':'added ' + name + ' to java certs'},
+              'changes': {'old':'', 'new':name},
               'comment': 'added ' + name + ' to java certs'}
     else:
       return {'name': name,
@@ -175,3 +175,81 @@ def ca_install(name,
           'result': True,
           'changes': {},
           'comment': 'The ' + name + ' certificate was already installed'}
+
+def cert_absent(name,
+                java_home=None,
+                keystore=None,
+                storepass="changeit"):
+  '''
+  removes a certificate from a java keystore using java's keytool.
+
+  name
+    The alias to use to name the certificate installed into the java keystore
+
+  java_home
+    The base java installation directory, should contain a bin folder and a lib
+    folder. This is optional, if it isn't passed, it will read the JAVA_HOME
+    environment variable and use that
+
+  keystore
+    The keystore for which to install the certificate. This defaults to 
+    lib\\security\\cacerts from the java_home directory passed (or the 
+    JAVA_HOME environment variable if no java_home was passed)
+
+  storepass
+    The keystore password for listing or installing a certificate. Defaults to
+    'changeit', which is the default java keystore password
+
+  This will verify that a certificate with the alias supplied isn't in the 
+  keystore.
+
+  .. code-block:: yaml
+
+    my_cert:
+      win_java.cert_present:
+        - java_home: C:\\path\\to\\java\\home
+        - keystore: C:\\path\\to\\java\\home\\and\\to\\keystore
+        - storepass: super_secret
+        - certificate: C:\\path\\to\\my\\certificate.crt
+
+  '''
+  if java_home is None:
+    java_home = __salt__['cmd.run'](
+      '[Environment]::GetEnvironmentVariable("JAVA_HOME","Machine")',
+      shell='powershell', python_shell=True)
+
+  if keystore is None:
+    keystore = java_home + '\\lib\\security\\cacerts'
+
+  verifyResult = __salt__['cmd.retcode']( 
+    '&"' + java_home + '\\bin\\keytool.exe"' +
+    ' -alias ' + name + 
+    ' -keystore "' + keystore + '"' +
+    ' -storepass ' + storepass + 
+    ' -list' +
+    ' -noprompt', shell='powershell', python_shell=True)
+
+  if verifyResult == 0:
+    storeResult = __salt__['cmd.retcode'](
+      '&"' + java_home + '\\bin\\keytool.exe" -delete' +
+      ' -alias ' + name +
+      ' -keystore "' + keystore + '"' +
+      ' -storepass ' + storepass +
+      ' -noprompt', shell="powershell", python_shell=True)
+      
+    if storeResult == 0:
+      return {'name': name, 
+              'result': True, 
+              'changes': {'old':name, 'new':''},
+              'comment': 'removed ' + name + ' from java certs'}
+
+    else:
+      return {'name': name,
+              'result': False,
+              'changes': {},
+              'comment': 'Encountered a problem removing ' + name + ' cert...'}
+
+  return {'name': name,
+          'result': True,
+          'changes': {},
+          'comment': 'The ' + name + ' certificate has already been removed'}
